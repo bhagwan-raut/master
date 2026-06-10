@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        jdk 'JDK17'
+        jdk 'JDK21'
         maven 'Maven'
     }
 
@@ -16,8 +16,8 @@ pipeline {
 
         stage('Clone Code') {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/bhagwan-raut/employee-management-app.git'
+                git branch: 'employee-management-app',
+                    url: 'https://github.com/bhagwan-raut/master.git'
             }
         }
 

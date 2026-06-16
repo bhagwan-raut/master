@@ -86,7 +86,7 @@ pipeline {
                 git config user.name "bhagwan-raut"
                 echo ${BUILD_VER} > build-version.txt
                 git add build-version.txt
-                git commit -m "Jenkins Auto Build - Version ${BUILD_VER} [skip ci]"
+                git commit -m "Jenkins Auto Build - Version ${BUILD_VER}"
                 git push https://%GIT_USER%:%GIT_TOKEN%@github.com/bhagwan-raut/master.git HEAD:employee-management-app
             """
         }

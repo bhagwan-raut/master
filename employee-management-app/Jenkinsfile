@@ -39,6 +39,14 @@ pipeline {
             }
         }
 
+        stage('Test') {
+            steps {
+                dir('employee-management-app') {
+                    bat 'mvn test'
+                }
+            }
+        }
+
         stage('Stop Old App') {
             steps {
                 bat '''

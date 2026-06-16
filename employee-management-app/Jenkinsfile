@@ -75,18 +75,21 @@ pipeline {
         }
 
         stage('Commit Build Number') {
-            steps {
-                sshagent(['github-ssh']) {
-                    bat "git config user.email \"bhagwanraut0597@gmail.com\""
-                    bat "git config user.name \"bhagwan-raut\""
-                    bat "echo ${BUILD_VER} > build-version.txt"
-                    bat "git add build-version.txt"
-                    bat "git commit -m \"Jenkins Auto Build - Version ${BUILD_VER} [skip ci]\""
-                    bat "git push git@github.com:bhagwan-raut/master.git HEAD:employee-management-app"
-                }
-            }
+        steps {
+        withCredentials([sshUserPrivateKey(
+            credentialsId: 'github-ssh',
+            keyFileVariable: 'SSH_KEY'
+        )]) {
+            bat "git config user.email \"bhagwanraut0597@gmail.com\""
+            bat "git config user.name \"bhagwan-raut\""
+            bat "echo ${BUILD_VER} > build-version.txt"
+            bat "git add build-version.txt"
+            bat "git commit -m \"Jenkins Auto Build - Version ${BUILD_VER} [skip ci]\""
+            bat "set GIT_SSH_COMMAND=ssh -i %SSH_KEY% && git push git@github.com:bhagwan-raut/master.git HEAD:employee-management-app"
         }
     }
+  }
+}
 
     post {
         success {

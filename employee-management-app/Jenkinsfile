@@ -7,23 +7,23 @@ pipeline {
     }
 
     environment {
-        DEPLOY_DIR  = 'C:\\deploy'
-        APP_NAME    = 'employee-management-app.jar'
-        APP_PORT    = '8085'
-        BUILD_VER   = "1.0.${BUILD_NUMBER}"
+        DEPLOY_DIR = 'C:\\deploy'
+        APP_NAME   = 'employee-management-app.jar'
+        APP_PORT   = '8085'
+        BUILD_VER  = "1.0.${BUILD_NUMBER}"
     }
 
     stages {
 
         stage('Clone Code') {
-             steps {
+            steps {
                 git branch: 'employee-management-app',
                     credentialsId: 'github-ssh',
                     url: 'git@github.com:bhagwan-raut/master.git'
             }
         }
 
-       stage('Set Version') {
+        stage('Set Version') {
             steps {
                 dir('employee-management-app') {
                     bat "mvn versions:set -DnewVersion=${BUILD_VER}"
@@ -32,16 +32,10 @@ pipeline {
         }
 
         stage('Build JAR') {
-    steps {
-        dir('employee-management-app') {  // ← ADD THIS
-            bat 'mvn clean package -DskipTests'
-        }
-    }
-}
-
-        stage('Test') {
             steps {
-                bat 'mvn test'
+                dir('employee-management-app') {
+                    bat 'mvn clean package -DskipTests'
+                }
             }
         }
 
@@ -59,7 +53,9 @@ pipeline {
         stage('Deploy JAR') {
             steps {
                 bat 'if not exist %DEPLOY_DIR% mkdir %DEPLOY_DIR%'
-                bat 'copy /Y target\\*.jar %DEPLOY_DIR%\\%APP_NAME%'
+                dir('employee-management-app') {
+                    bat 'copy /Y target\\*.jar %DEPLOY_DIR%\\%APP_NAME%'
+                }
             }
         }
 
@@ -70,26 +66,19 @@ pipeline {
             }
         }
 
-        stage('Tag Build on GitHub') {
+        stage('Commit Build Number') {
             steps {
-                bat "git tag -a v${BUILD_VER} -m \"Jenkins Build ${BUILD_VER}\""
-                bat "git push https://YOUR_TOKEN@github.com/bhagwan-raut/master.git v${BUILD_VER}"
-            }
-        }
-
-       stage('Commit Build Number') {
-        steps {
-        sshagent(['github-ssh']) {
-            bat "git config user.email \"bhagwanraut0597@gmail.com\""
-            bat "git config user.name \"bhagwan-raut\""
-            bat "echo ${BUILD_VER} > build-version.txt"
-            bat "git add build-version.txt"
-            bat "git commit -m \"Jenkins Auto Build - Version ${BUILD_VER} [skip ci]\""
-            bat "git push git@github.com:bhagwan-raut/master.git HEAD:employee-management-app"
+                sshagent(['github-ssh']) {
+                    bat "git config user.email \"bhagwanraut0597@gmail.com\""
+                    bat "git config user.name \"bhagwan-raut\""
+                    bat "echo ${BUILD_VER} > build-version.txt"
+                    bat "git add build-version.txt"
+                    bat "git commit -m \"Jenkins Auto Build - Version ${BUILD_VER} [skip ci]\""
+                    bat "git push git@github.com:bhagwan-raut/master.git HEAD:employee-management-app"
                 }
             }
         }
-     }
+    }
 
     post {
         success {

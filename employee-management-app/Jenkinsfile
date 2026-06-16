@@ -32,10 +32,12 @@ pipeline {
         }
 
         stage('Build JAR') {
-            steps {
-                bat 'mvn clean package -DskipTests'
-            }
+    steps {
+        dir('employee-management-app') {  // ← ADD THIS
+            bat 'mvn clean package -DskipTests'
         }
+    }
+}
 
         stage('Test') {
             steps {

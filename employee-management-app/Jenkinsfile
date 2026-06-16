@@ -22,10 +22,11 @@ pipeline {
             }
         }
 
-        stage('Set Version') {
+       stage('Set Version') {
             steps {
-                bat "mvn versions:set -DnewVersion=${BUILD_VER}"
-                echo "Building version: ${BUILD_VER}"
+                dir('employee-management-app') {
+                    bat "mvn versions:set -DnewVersion=${BUILD_VER}"
+                }
             }
         }
 

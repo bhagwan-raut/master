@@ -16,9 +16,10 @@ pipeline {
     stages {
 
         stage('Clone Code') {
-            steps {
+             steps {
                 git branch: 'employee-management-app',
-                    url: 'https://github.com/bhagwan-raut/master.git'
+                    credentialsId: 'github-ssh',
+                    url: 'git@github.com:bhagwan-raut/master.git'
             }
         }
 

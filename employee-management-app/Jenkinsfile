@@ -49,15 +49,15 @@ pipeline {
 
         stage('Stop Old App') {
             steps {
-                bat '''
-                    for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8085"') do (
-                        taskkill /PID %%a /F 2>nul
-                    )
-                    exit 0
-                '''
-            }
+        bat '''
+            for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8085"') do (
+                taskkill /PID %%a /F 2>nul
+            )
+            timeout /t 5 /nobreak
+            exit 0
+        '''
         }
-
+    }
         stage('Deploy JAR') {
             steps {
                 bat 'if not exist %DEPLOY_DIR% mkdir %DEPLOY_DIR%'

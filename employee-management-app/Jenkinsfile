@@ -1,20 +1,16 @@
 pipeline {
     agent any
-
     tools {
         jdk 'JDK21'
         maven 'Maven'
     }
-
     environment {
         DEPLOY_DIR = 'C:\\deploy'
         APP_NAME   = 'employee-management-app.jar'
         APP_PORT   = '8085'
         BUILD_VER  = "1.0.${BUILD_NUMBER}"
     }
-
     stages {
-
         stage('Clone Code') {
             steps {
                 git branch: 'employee-management-app',
@@ -22,7 +18,6 @@ pipeline {
                     url: 'git@github.com:bhagwan-raut/master.git'
             }
         }
-
         stage('Set Version') {
             steps {
                 dir('employee-management-app') {
@@ -30,7 +25,6 @@ pipeline {
                 }
             }
         }
-
         stage('Build JAR') {
             steps {
                 dir('employee-management-app') {
@@ -38,7 +32,6 @@ pipeline {
                 }
             }
         }
-
         stage('Test') {
             steps {
                 dir('employee-management-app') {
@@ -46,18 +39,39 @@ pipeline {
                 }
             }
         }
-
         stage('Stop Old App') {
             steps {
-        bat '''
-            for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8085"') do (
-                taskkill /PID %%a /F 2>nul
-            )
-            timeout /t 5 /nobreak
-            exit 0
-        '''
+                bat '''
+                    for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8085"') do (
+                        taskkill /PID %%a /F 2>nul
+                    )
+                    timeout /t 5 /nobreak
+                    exit 0
+                '''
+            }
         }
-    }
+        // TEMPORARY DIAGNOSTIC STAGE - remove once issue is found
+        stage('Diagnose Lock') {
+            steps {
+                bat '''
+                    echo --- checking for leftover java processes ---
+                    tasklist | findstr java
+                    echo --- checking port 8085 ---
+                    netstat -aon | findstr ":8085"
+                    exit 0
+                '''
+                dir('employee-management-app') {
+                    bat '''
+                        echo --- source jar size before manual copy ---
+                        dir target\\employee-management-app.jar
+                        echo --- manual copy test ---
+                        copy /Y target\\employee-management-app.jar %DEPLOY_DIR%\\test-manual.jar
+                        echo --- manual copy result size ---
+                        dir %DEPLOY_DIR%\\test-manual.jar
+                    '''
+                }
+            }
+        }
         stage('Deploy JAR') {
             steps {
                 bat 'if not exist %DEPLOY_DIR% mkdir %DEPLOY_DIR%'
@@ -66,34 +80,31 @@ pipeline {
                 }
             }
         }
-
         stage('Start App') {
             steps {
                 bat 'start /B java -jar %DEPLOY_DIR%\\%APP_NAME% > %DEPLOY_DIR%\\app.log 2>&1'
                 echo "App version ${BUILD_VER} started at http://localhost:8085"
             }
         }
-
         stage('Commit Build Number') {
-        steps {
-        withCredentials([usernamePassword(
-            credentialsId: 'github-credentials',
-            usernameVariable: 'GIT_USER',
-            passwordVariable: 'GIT_TOKEN'
-        )]) {
-            bat """
-                git config user.email "bhagwanraut0597@gmail.com"
-                git config user.name "bhagwan-raut"
-                echo ${BUILD_VER} > build-version.txt
-                git add build-version.txt
-                git commit -m "Jenkins Build - Version ${BUILD_VER}"
-                git push https://%GIT_USER%:%GIT_TOKEN%@github.com/bhagwan-raut/master.git HEAD:employee-management-app
-            """
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'github-credentials',
+                    usernameVariable: 'GIT_USER',
+                    passwordVariable: 'GIT_TOKEN'
+                )]) {
+                    bat """
+                        git config user.email "bhagwanraut0597@gmail.com"
+                        git config user.name "bhagwan-raut"
+                        echo ${BUILD_VER} > build-version.txt
+                        git add build-version.txt
+                        git commit -m "Jenkins Build - Version ${BUILD_VER}"
+                        git push https://%GIT_USER%:%GIT_TOKEN%@github.com/bhagwan-raut/master.git HEAD:employee-management-app
+                    """
+                }
+            }
         }
     }
-}
-}
-
     post {
         success {
             echo "✅ Build ${BUILD_VER} Successful!"

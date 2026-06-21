@@ -50,6 +50,28 @@ pipeline {
                 '''
             }
         }
+        // TEMPORARY DIAGNOSTIC STAGE - remove once issue is found
+        stage('Diagnose Lock') {
+            steps {
+                bat '''
+                    echo --- checking for leftover java processes ---
+                    tasklist | findstr java
+                    echo --- checking port 8085 ---
+                    netstat -aon | findstr ":8085"
+                    exit 0
+                '''
+                dir('employee-management-app') {
+                    bat '''
+                        echo --- source jar size before manual copy ---
+                        dir target\\employee-management-app.jar
+                        echo --- manual copy test ---
+                        copy /Y target\\employee-management-app.jar %DEPLOY_DIR%\\test-manual.jar
+                        echo --- manual copy result size ---
+                        dir %DEPLOY_DIR%\\test-manual.jar
+                    '''
+                }
+            }
+        }
         stage('Deploy JAR') {
             steps {
                 bat 'if not exist %DEPLOY_DIR% mkdir %DEPLOY_DIR%'

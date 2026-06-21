@@ -42,10 +42,20 @@ pipeline {
         stage('Stop Old App') {
             steps {
                 bat '''
-                    for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8085"') do (
-                        taskkill /PID %%a /F 2>nul
+                    echo --- killing any process on port 8085 ---
+                    for /L %%i in (1,1,10) do (
+                        set "FOUND="
+                        for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8085"') do (
+                            taskkill /PID %%a /F 2>nul
+                            set "FOUND=1"
+                        )
+                        if not defined FOUND goto :portclear
+                        timeout /t 2 /nobreak >nul
                     )
-                    timeout /t 5 /nobreak
+                    :portclear
+                    echo --- verifying port 8085 is free ---
+                    netstat -aon | findstr ":8085"
+                    timeout /t 3 /nobreak
                     exit 0
                 '''
             }

@@ -55,8 +55,6 @@ pipeline {
                     :portclear
                     echo --- verifying port 8085 is free ---
                     netstat -aon | findstr ":8085"
-                    echo --- killing any remaining java.exe just in case ---
-                    taskkill /F /IM java.exe 2>nul
                     timeout /t 3 /nobreak
                     exit 0
                 '''

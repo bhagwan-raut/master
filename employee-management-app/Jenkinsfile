@@ -77,9 +77,9 @@ pipeline {
         }
         stage('Start App') {
             steps {
-                powershell '''
-                    Start-Process -FilePath "java" -ArgumentList "-jar `"$env:DEPLOY_DIR\\$env:APP_NAME`"" -WindowStyle Hidden -RedirectStandardOutput "$env:DEPLOY_DIR\\app.log" -RedirectStandardError "$env:DEPLOY_DIR\\app-error.log"
-                '''
+                bat """
+                    powershell -Command "Start-Process -FilePath 'java' -ArgumentList '-jar','%DEPLOY_DIR%\\%APP_NAME%' -WindowStyle Hidden -RedirectStandardOutput '%DEPLOY_DIR%\\app.log' -RedirectStandardError '%DEPLOY_DIR%\\app-error.log'"
+                """
                 echo "App version ${BUILD_VER} started at http://localhost:8085"
             }
         }

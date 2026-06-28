@@ -1,0 +1,6 @@
+# This CODEOWNERS file makes @bhagwan-raut the code owner for the repository.
+# When you enable "Require review from Code Owners" in branch protection,
+# changes will require your approval before merging.
+
+# All files in the repo are owned by @bhagwan-raut
+* @bhagwan-raut

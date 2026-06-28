@@ -77,11 +77,7 @@ pipeline {
         }
         stage('Start App') {
             steps {
-                bat """
-                    echo @echo off > %DEPLOY_DIR%\\start-app.bat
-                    echo start /B "C:\\Program Files\\Java\\jdk-21.0.11\\bin\\java.exe" -jar %DEPLOY_DIR%\\%APP_NAME% >> %DEPLOY_DIR%\\start-app.bat
-                    %DEPLOY_DIR%\\start-app.bat
-                """
+                bat 'wmic process call create "\"C:\\Program Files\\Java\\jdk-21.0.11\\bin\\java.exe\" -jar %DEPLOY_DIR%\\%APP_NAME%"'
                 echo "App version ${BUILD_VER} started at http://localhost:8085"
             }
         }

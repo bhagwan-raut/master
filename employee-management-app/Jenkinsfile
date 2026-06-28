@@ -77,7 +77,11 @@ pipeline {
         }
         stage('Start App') {
             steps {
-                bat 'wmic process call create "\"C:\\Program Files\\Java\\jdk-21.0.11\\bin\\java.exe\" -jar %DEPLOY_DIR%\\%APP_NAME%"'
+                bat """
+                    echo Set oShell = CreateObject("WScript.Shell") > %DEPLOY_DIR%\\launcher.vbs
+                    echo oShell.Run chr(34) ^& "C:\\Program Files\\Java\\jdk-21.0.11\\bin\\java.exe" ^& chr(34) ^& " -jar %DEPLOY_DIR%\\%APP_NAME%", 0, False >> %DEPLOY_DIR%\\launcher.vbs
+                    cscript //nologo %DEPLOY_DIR%\\launcher.vbs
+                """
                 echo "App version ${BUILD_VER} started at http://localhost:8085"
             }
         }
